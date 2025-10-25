@@ -1,24 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Heart, Copy, ArrowLeft, Check } from 'lucide-react';
+import { useApi } from '../../hooks/useApi';
 
 interface AddPatientProps {
   onBack: () => void;
+  accessToken: string | null;
 }
 
-export function AddPatient({ onBack }: AddPatientProps) {
-  const [inviteCode] = useState(() => {
-    // Generate random 6-character code
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  });
+export function AddPatient({ onBack, accessToken }: AddPatientProps) {
+  const [inviteCode, setInviteCode] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const api = useApi(accessToken);
+
+  useEffect(() => {
+    // Generate invite code on mount
+    const generateCode = async () => {
+      try {
+        const code = await api.generateInviteCode();
+        setInviteCode(code);
+      } catch (error) {
+        console.error('Error generating code:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    generateCode();
+  }, []);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(inviteCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="size-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Gerando código...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Heart } from 'lucide-react';
 
 interface PsychologistSignupProps {
-  onSignup: () => void;
+  onSignup: (email: string, password: string, name: string, crp: string) => Promise<boolean>;
   onGoToLogin: () => void;
 }
 
@@ -16,12 +16,17 @@ export function PsychologistSignup({ onSignup, onGoToLogin }: PsychologistSignup
   const [crp, setCrp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === confirmPassword) {
-      onSignup();
+    if (password !== confirmPassword) {
+      alert('As senhas não coincidem');
+      return;
     }
+    setLoading(true);
+    await onSignup(email, password, name, crp);
+    setLoading(false);
   };
 
   return (
@@ -95,8 +100,12 @@ export function PsychologistSignup({ onSignup, onGoToLogin }: PsychologistSignup
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
-              Cadastrar
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+              disabled={loading}
+            >
+              {loading ? 'Cadastrando...' : 'Cadastrar'}
             </Button>
           </form>
           <div className="mt-4 text-center">

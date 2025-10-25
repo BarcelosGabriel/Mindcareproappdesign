@@ -3,29 +3,31 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Heart, ArrowLeft, Send } from 'lucide-react';
-import { Message } from '../../types';
+import { useChatMessages } from '../../hooks/useApi';
 
 interface ChatViewProps {
   currentUserId: string;
   currentUserName: string;
   currentUserType: 'psychologist' | 'patient';
+  otherUserId: string;
   otherUserName: string;
-  messages: Message[];
+  accessToken: string | null;
   onBack: () => void;
-  onSendMessage: (text: string) => void;
 }
 
 export function ChatView({
   currentUserId,
   currentUserName,
   currentUserType,
+  otherUserId,
   otherUserName,
-  messages,
-  onBack,
-  onSendMessage
+  accessToken,
+  onBack
 }: ChatViewProps) {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { messages, loading, sendMessage } = useChatMessages(accessToken, otherUserId, true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,10 +37,14 @@ export function ChatView({
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (newMessage.trim()) {
-      onSendMessage(newMessage);
-      setNewMessage('');
+      try {
+        await sendMessage(newMessage);
+        setNewMessage('');
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
     }
   };
 
@@ -49,11 +55,11 @@ export function ChatView({
     }
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (timestamp: string) => {
     return new Intl.DateTimeFormat('pt-BR', {
       hour: '2-digit',
       minute: '2-digit'
-    }).format(date);
+    }).format(new Date(timestamp));
   };
 
   return (

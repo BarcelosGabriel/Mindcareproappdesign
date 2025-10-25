@@ -7,21 +7,20 @@ import { Heart } from 'lucide-react';
 
 interface PatientSignupProps {
   inviteCode: string;
-  onSignup: (data: { name: string; age: number; phone: string }) => void;
+  onSignup: (name: string, age: number, phone: string) => Promise<boolean>;
 }
 
 export function PatientSignup({ inviteCode, onSignup }: PatientSignupProps) {
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSignup({
-      name,
-      age: parseInt(age),
-      phone
-    });
+    setLoading(true);
+    await onSignup(name, parseInt(age), phone);
+    setLoading(false);
   };
 
   return (
@@ -84,8 +83,9 @@ export function PatientSignup({ inviteCode, onSignup }: PatientSignupProps) {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+              disabled={loading}
             >
-              Finalizar Cadastro
+              {loading ? 'Carregando...' : 'Finalizar Cadastro'}
             </Button>
           </form>
 

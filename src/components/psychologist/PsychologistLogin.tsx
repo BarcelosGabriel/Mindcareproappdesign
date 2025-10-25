@@ -6,17 +6,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Heart } from 'lucide-react';
 
 interface PsychologistLoginProps {
-  onLogin: () => void;
+  onLogin: (email: string, password: string) => Promise<boolean>;
   onGoToSignup: () => void;
 }
 
 export function PsychologistLogin({ onLogin, onGoToSignup }: PsychologistLoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    setLoading(true);
+    await onLogin(email, password);
+    setLoading(false);
   };
 
   return (
@@ -57,8 +60,12 @@ export function PsychologistLogin({ onLogin, onGoToSignup }: PsychologistLoginPr
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
-              Entrar
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+              disabled={loading}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
           <div className="mt-4 text-center">

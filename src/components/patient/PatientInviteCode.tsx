@@ -6,16 +6,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Heart } from 'lucide-react';
 
 interface PatientInviteCodeProps {
-  onValidateCode: (code: string) => void;
+  onValidateCode: (code: string) => Promise<boolean>;
 }
 
 export function PatientInviteCode({ onValidateCode }: PatientInviteCodeProps) {
   const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (code.trim().length === 6) {
-      onValidateCode(code.toUpperCase());
+      setLoading(true);
+      await onValidateCode(code.toUpperCase());
+      setLoading(false);
     }
   };
 
@@ -54,9 +57,9 @@ export function PatientInviteCode({ onValidateCode }: PatientInviteCodeProps) {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-              disabled={code.length !== 6}
+              disabled={code.length !== 6 || loading}
             >
-              Validar Código
+              {loading ? 'Validando...' : 'Validar Código'}
             </Button>
           </form>
 
